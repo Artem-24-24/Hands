@@ -2,9 +2,9 @@ import * as THREE from 'three'
 import {VRButton} from "three/examples/jsm/webxr/VRButton"
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader"
+import {XRControllerModelFactory} from "three/examples/jsm/webxr/XRControllerModelFactory";
 
-import blimp from "../assets/Blimp.glb"
-import chair from "../assets/medieval-chair.glb"
+import clown from "../assets/clown.glb"
 
 class App {
   constructor() {
@@ -53,16 +53,22 @@ class App {
 
     sphere.position.set(1.5, 0, 0)
 
-    this.loadAsset(blimp, -.5, .5, 1, scene => {
-      const scale = 5
-      scene.scale.set(scale, scale, scale)
-      self.blimp = scene
-    })
+    // this.loadAsset(blimp, -.5, .5, 1, scene => {
+    //   const scale = 5
+    //   scene.scale.set(scale, scale, scale)
+    //   self.blimp = scene
+    // })
+    //
+    // this.loadAsset(chair, .5, .5, 1, scene => {
+    //   const scale = 1
+    //   scene.scale.set(scale, scale, scale)
+    //   self.chair = scene
+    // })
 
-    this.loadAsset(chair, .5, .5, 1, scene => {
+    this.loadAsset(clown, -.5, .5, 1, scene => {
       const scale = 1
       scene.scale.set(scale, scale, scale)
-      self.chair = scene
+      self.blimp = scene
     })
 
   }
@@ -91,6 +97,10 @@ class App {
   setupVR() {
     this.renderer.xr.enabled = true
     document.body.appendChild(VRButton.createButton(this.renderer))
+
+    const grip = this.renderer.xr.getControllerGrip(0)
+    grip.add(new XRControllerModelFactory().createControllerModel(grip))
+    this.scene.add(grip)
   }
 
   resize() {
@@ -105,10 +115,7 @@ class App {
       this.mesh.rotateY(0.01)
     }
 
-    if (this.blimp) {
-      this.blimp.rotateY(0.1 * xAxis)
-      this.blimp.translateY(.02 * yAxis)
-    }
+
     this.renderer.render(this.scene, this.camera)
   }
 }
