@@ -5,6 +5,7 @@ import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader"
 import {XRControllerModelFactory} from "three/examples/jsm/webxr/XRControllerModelFactory";
 
 import clown from "../assets/clown.glb"
+import {XRHandModelFactory} from "three/examples/jsm/webxr/XRHandModelFactory";
 
 class App {
   constructor() {
@@ -68,7 +69,7 @@ class App {
     this.loadAsset(clown, -.5, .5, 1, scene => {
       const scale = 1
       scene.scale.set(scale, scale, scale)
-      self.blimp = scene
+      self.clown = scene
     })
 
   }
@@ -98,10 +99,20 @@ class App {
     this.renderer.xr.enabled = true
     document.body.appendChild(VRButton.createButton(this.renderer))
 
-    const grip = this.renderer.xr.getControllerGrip(0)
-    grip.add(new XRControllerModelFactory().createControllerModel(grip))
-    this.scene.add(grip)
+    const hand = this.renderer.xr.getHand(0)
+    hand.add(new XRHandModelFactory().createHandModel(hand))
+    this.scene.add(hand)
+
+    hand.addEventListener( 'pinchend', evt => {
+      self.testPinchend( evt.handedness );
+    })
   }
+  testPinchend(handedness) {
+    this.clown.rotateX(90)
+    console.log("Press pinch")
+
+  }
+
 
   resize() {
     this.camera.aspect = window.innerWidth / window.innerHeight
@@ -113,6 +124,11 @@ class App {
     if (this.mesh) {
       this.mesh.rotateX(0.005)
       this.mesh.rotateY(0.01)
+    }
+
+    if (this.mesh) {
+      this.clown.rotateX(0.01)
+      // this.mesh.rotateY(0.01)
     }
 
 
