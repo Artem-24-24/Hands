@@ -5,6 +5,7 @@ import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader"
 import {XRControllerModelFactory} from "three/examples/jsm/webxr/XRControllerModelFactory";
 
 import clown from "../assets/clown.glb"
+import blimp from "../assets/blimp.glb"
 import {XRHandModelFactory} from "three/examples/jsm/webxr/XRHandModelFactory";
 
 class App {
@@ -54,11 +55,12 @@ class App {
 
     sphere.position.set(1.5, 0, 0)
 
-    // this.loadAsset(blimp, -.5, .5, 1, scene => {
-    //   const scale = 5
-    //   scene.scale.set(scale, scale, scale)
-    //   self.blimp = scene
-    // })
+    const self = this
+    this.loadAsset(blimp, 5, .5, -5, scene => {
+      const scale = 5
+      scene.scale.set(scale, scale, scale)
+      self.blimp = scene
+    })
     //
     // this.loadAsset(chair, .5, .5, 1, scene => {
     //   const scale = 1
@@ -66,7 +68,7 @@ class App {
     //   self.chair = scene
     // })
 
-    this.loadAsset(clown, -.5, .5, 1, scene => {
+    this.loadAsset(clown, 0, .5, -5, scene => {
       const scale = 1
       scene.scale.set(scale, scale, scale)
       self.clown = scene
@@ -95,25 +97,57 @@ class App {
     )
   }
 
+  changeAngle(handedness) {
+    if (this.clown) {
+      this.clown.rotateY(15)
+    }
+  }
+
+  changePosition(handedness) {
+    if (this.blimp) {
+     const pos = this.blimp.position
+      this.blimp.position.set(pos.x -0.5, pos.y, pos.z)
+    }
+  }
+
   setupVR() {
     this.renderer.xr.enabled = true
     document.body.appendChild(VRButton.createButton(this.renderer))
+       /* const grip = this.renderer.xr.getControllerGrip(0)
+       grip.add(new XRControllerModelFactory().createControllerModel(grip))
+       this.scene.add(grip)
+       const grip2 = this.renderer.xr.getControllerGrip(1)
+       grip2.add(new XRControllerModelFactory().createControllerModel(grip2))
+       this.scene.add(grip2)
+   */
 
-    const hand = this.renderer.xr.getHand(0)
-    hand.add(new XRHandModelFactory().createHandModel(hand))
-    this.scene.add(hand)
+      const hand1 = this.renderer.xr.getHand(0)
+      hand1.add (new XRHandModelFactory().createHandModel(hand1, "mesh"))
+      this.scene.add(hand1)
+      hand1.addEventListener('selectstart',  evt => {
+        self.changeAngle.bind(self, evt.handedness ).call();
+      } )
 
-    hand.addEventListener( 'pinchend', evt => {
-      self.testPinchend( evt.handedness );
-    })
-  }
-  testPinchend(handedness) {
-    this.clown.rotateX(90)
-    console.log("Press pinch")
-
-  }
+      const hand2 = this.renderer.xr.getHand(1)
+      hand2.add (new XRHandModelFactory().createHandModel(hand2, "mesh"))
+      this.scene.add(hand2)
+      hand2.addEventListener('selectstart',  evt => {
+        self.changePosition.bind(self, evt.handedness ).call();
+      } )
 
 
+      const self = this
+
+      hand1.addEventListener( 'pinchend', evt => {
+        self.changeAngle.bind(self, evt.handedness ).call();
+      } );
+
+      hand2.addEventListener( 'pinchend', evt => {
+        self.changePosition.bind(self, evt.handedness ).call();
+      } );
+
+
+    }
   resize() {
     this.camera.aspect = window.innerWidth / window.innerHeight
     this.camera.updateProjectionMatrix()
@@ -126,10 +160,10 @@ class App {
       this.mesh.rotateY(0.01)
     }
 
-    if (this.mesh) {
-      this.clown.rotateX(0.01)
-      // this.mesh.rotateY(0.01)
-    }
+    // if (this.mesh) {
+    //   this.clown.rotateX(0.01)
+    //   // this.mesh.rotateY(0.01)
+    // }
 
 
     this.renderer.render(this.scene, this.camera)
