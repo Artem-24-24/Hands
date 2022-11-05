@@ -37,6 +37,6 @@ module.exports = {
     //   directory: path.join(__dirname, 'src/logo.png')
     // },
     compress: true,
-    port: 9000
+    port: 9999
   }
 };
