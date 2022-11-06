@@ -11,7 +11,8 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        {from: 'node_modules/three/examples/js/libs/draco', to: 'draco'}
+        {from: 'node_modules/three/examples/js/libs/draco', to: 'draco'},
+        {from: 'sounds', to: 'sounds'}
       ]
     })
   ],
