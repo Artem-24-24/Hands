@@ -387,6 +387,8 @@ class App {
   //   }
   // }
   Rotating;
+  camera;
+
 
   makeButtonMesh( x, y, z, color ) {
 
@@ -412,38 +414,6 @@ class App {
      grip2.add(new XRControllerModelFactory().createControllerModel(grip2))
      this.scene.add(grip2)
  */
-
-    const consoleGeometry = new THREE.BoxGeometry(0.5, 0.12, 0.15);
-    const consoleMaterial = new THREE.MeshPhongMaterial({color: 0x595959});
-    const consoleMesh = new THREE.Mesh(consoleGeometry, consoleMaterial);
-    consoleMesh.position.set(0, 1, -0.3);
-    consoleMesh.castShadow = true;
-    consoleMesh.receiveShadow = true;
-    this.scene.add(consoleMesh);
-
-    const orangeButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0xffd3b5 );
-    orangeButton.position.set( - 0.15, 0.04, 0 );
-    consoleMesh.add( orangeButton );
-
-    const pinkButton = this.makeButtonMesh(0.08, 0.1, 0.08, 0xe84a5f);
-    pinkButton.position.set(-0.05, 0.04, 0);
-    consoleMesh.add(pinkButton);
-
-    const resetButton = this.makeButtonMesh(0.08, 0.1, 0.08, 0x355c7d);
-    const resetButtonText = createText('reset', 0.03);
-    resetButton.add(resetButtonText);
-    resetButtonText.rotation.x = -Math.PI / 2;
-    resetButtonText.position.set(0, 0.051, 0);
-    resetButton.position.set(0.05, 0.04, 0);
-    consoleMesh.add(resetButton);
-
-    const exitButton = this.makeButtonMesh(0.08, 0.1, 0.08, 0xff0000);
-    const exitButtonText = createText('exit', 0.03);
-    exitButton.add(exitButtonText);
-    exitButtonText.rotation.x = -Math.PI / 2;
-    exitButtonText.position.set(0, 0.051, 0);
-    exitButton.position.set(0.15, 0.04, 0);
-    consoleMesh.add(exitButton);
 
     class OffsetFromCamera extends Component { }
 
@@ -493,22 +463,60 @@ class App {
       }
     };
 
-    const tkGeometry = new THREE.TorusKnotGeometry(0.5, 0.2, 200, 32);
-    const tkMaterial = new THREE.MeshPhongMaterial({color: 0xffffff});
+    const floorGeometry = new THREE.PlaneGeometry( 4, 4 );
+    const floorMaterial = new THREE.MeshPhongMaterial( { color: 0x222222 } );
+    const floor = new THREE.Mesh( floorGeometry, floorMaterial );
+    floor.rotation.x = - Math.PI / 2;
+    floor.receiveShadow = true;
+    this.scene.add( floor );
+
+    const consoleGeometry = new THREE.BoxGeometry( 0.5, 0.12, 0.15 );
+    const consoleMaterial = new THREE.MeshPhongMaterial( { color: 0x595959 } );
+    const consoleMesh = new THREE.Mesh( consoleGeometry, consoleMaterial );
+    consoleMesh.position.set( 0, 1, - 0.3 );
+    consoleMesh.castShadow = true;
+    consoleMesh.receiveShadow = true;
+    this.scene.add( consoleMesh );
+
+    const orangeButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0xffd3b5 );
+    orangeButton.position.set( - 0.15, 0.04, 0 );
+    consoleMesh.add( orangeButton );
+
+    const pinkButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0xe84a5f );
+    pinkButton.position.set( - 0.05, 0.04, 0 );
+    consoleMesh.add( pinkButton );
+
+    const resetButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0x355c7d );
+    const resetButtonText = createText( 'reset', 0.03 );
+    resetButton.add( resetButtonText );
+    resetButtonText.rotation.x = - Math.PI / 2;
+    resetButtonText.position.set( 0, 0.051, 0 );
+    resetButton.position.set( 0.05, 0.04, 0 );
+    consoleMesh.add( resetButton );
+
+    const exitButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0xff0000 );
+    const exitButtonText = createText( 'exit', 0.03 );
+    exitButton.add( exitButtonText );
+    exitButtonText.rotation.x = - Math.PI / 2;
+    exitButtonText.position.set( 0, 0.051, 0 );
+    exitButton.position.set( 0.15, 0.04, 0 );
+    consoleMesh.add( exitButton );
+
+    const tkGeometry = new THREE.TorusKnotGeometry( 0.5, 0.2, 200, 32 );
+    const tkMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
     tkMaterial.metalness = 0.8;
-    const torusKnot = new THREE.Mesh(tkGeometry, tkMaterial);
-    torusKnot.position.set(0, 1, -5);
-    this.scene.add(torusKnot);
+    const torusKnot = new THREE.Mesh( tkGeometry, tkMaterial );
+    torusKnot.position.set( 0, 1, - 5 );
+    this.scene.add( torusKnot );
 
-    const instructionText = createText('This is a WebXR Hands demo, please explore with hands.', 0.04);
-    instructionText.position.set(0, 1.6, -0.6);
-    this.scene.add(instructionText);
+    const instructionText = createText( 'This is a WebXR Hands demo, please explore with hands.', 0.04 );
+    instructionText.position.set( 0, 1.6, - 0.6 );
+    this.scene.add( instructionText );
 
-
-    const exitText = createText('Exiting session...', 0.04);
-    exitText.position.set(0, 1.5, -0.6);
+    const exitText = createText( 'Exiting session...', 0.04 );
+    exitText.position.set( 0, 1.5, - 0.6 );
     exitText.visible = false;
-    this.scene.add(exitText);
+    this.scene.add( exitText );
 
     this.world
         .registerComponent(Object3D)
@@ -526,57 +534,70 @@ class App {
         .registerSystem(FingerInputSystem, {hands: [this.hand1, this.hand2]});
 
     const csEntity = this.world.createEntity();
-    csEntity.addComponent(OffsetFromCamera, {x: 0, y: -0.4, z: -0.3});
-    csEntity.addComponent(NeedCalibration);
-    csEntity.addComponent(Object3D, {object: consoleMesh});
+    csEntity.addComponent( OffsetFromCamera, { x: 0, y: - 0.4, z: - 0.3 } );
+    csEntity.addComponent( NeedCalibration );
+    csEntity.addComponent( Object3D, { object: consoleMesh } );
 
     const obEntity = this.world.createEntity();
-    obEntity.addComponent(Pressable);
-    obEntity.addComponent(Object3D, {object: orangeButton});
+    obEntity.addComponent( Pressable );
+    obEntity.addComponent( Object3D, { object: orangeButton } );
     const obAction = function () {
 
-      torusKnot.material.color.setHex(0xffd3b5);
+      torusKnot.material.color.setHex( 0xffd3b5 );
 
     };
 
-    obEntity.addComponent(Button, {action: obAction, surfaceY: 0.05, fullPressDistance: 0.02});
+    obEntity.addComponent( Button, { action: obAction, surfaceY: 0.05, fullPressDistance: 0.02 } );
 
     const pbEntity = this.world.createEntity();
-    pbEntity.addComponent(Pressable);
-    pbEntity.addComponent(Object3D, {object: pinkButton});
+    pbEntity.addComponent( Pressable );
+    pbEntity.addComponent( Object3D, { object: pinkButton } );
     const pbAction = function () {
 
-      torusKnot.material.color.setHex(0xe84a5f);
+      torusKnot.material.color.setHex( 0xe84a5f );
 
     };
 
-    pbEntity.addComponent(Button, {action: pbAction, surfaceY: 0.05, fullPressDistance: 0.02});
+    pbEntity.addComponent( Button, { action: pbAction, surfaceY: 0.05, fullPressDistance: 0.02 } );
 
     const rbEntity = this.world.createEntity();
-    rbEntity.addComponent(Pressable);
-    rbEntity.addComponent(Object3D, {object: resetButton});
+    rbEntity.addComponent( Pressable );
+    rbEntity.addComponent( Object3D, { object: resetButton } );
     const rbAction = function () {
 
-      torusKnot.material.color.setHex(0xffffff);
+      torusKnot.material.color.setHex( 0xffffff );
 
     };
 
-    rbEntity.addComponent(Button, {action: rbAction, surfaceY: 0.05, fullPressDistance: 0.02});
+    rbEntity.addComponent( Button, { action: rbAction, surfaceY: 0.05, fullPressDistance: 0.02 } );
 
     const ebEntity = this.world.createEntity();
-    ebEntity.addComponent(Pressable);
-    ebEntity.addComponent(Object3D, {object: exitButton});
+    ebEntity.addComponent( Pressable );
+    ebEntity.addComponent( Object3D, { object: exitButton } );
     const ebAction = function () {
 
       exitText.visible = true;
-      setTimeout(function () {
+      setTimeout( function () {
 
-        exitText.visible = false;
-        renderer.xr.getSession().end();
+        exitText.visible = false; renderer.xr.getSession().end();
 
-      }, 2000);
+      }, 2000 );
 
     };
+
+    ebEntity.addComponent( Button, { action: ebAction, surfaceY: 0.05, recoverySpeed: 0.2, fullPressDistance: 0.03 } );
+
+    const tkEntity = this.world.createEntity();
+    tkEntity.addComponent( Rotating );
+    tkEntity.addComponent( Object3D, { object: torusKnot } );
+
+    const itEntity = this.world.createEntity();
+    itEntity.addComponent( HandsInstructionText );
+    itEntity.addComponent( Object3D, { object: instructionText } );
+
+    window.addEventListener( 'resize', onWindowResize );
+
+
     function onWindowResize() {
 
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -586,17 +607,7 @@ class App {
 
     }
 
-    ebEntity.addComponent(Button, {action: ebAction, surfaceY: 0.05, recoverySpeed: 0.2, fullPressDistance: 0.03});
 
-    const tkEntity = this.world.createEntity();
-    tkEntity.addComponent(Rotating);
-    tkEntity.addComponent(Object3D, {object: torusKnot});
-
-    const itEntity = this.world.createEntity();
-    itEntity.addComponent(HandsInstructionText);
-    itEntity.addComponent(Object3D, {object: instructionText});
-
-    window.addEventListener('resize', onWindowResize);
 
 
     const hand1 = this.renderer.xr.getHand(0)
@@ -614,126 +625,12 @@ class App {
     this.hand2 = hand2
   }
 
-  //
-  //
-  //   const self = this
-  //
-  //   hand1.addEventListener( 'pinchstart', event => {
-  //     self.onPinchStartLeft.bind(self, event).call()
-  //   } );
-  //   hand1.addEventListener( 'pinchend', () => {
-  //     self.scaling.active = false;
-  //   } );
-  //
-  //   hand2.addEventListener( 'pinchstart', (event) => {
-  //     self.onPinchStartRight.bind(self, event).call()
-  //   } );
-  //   hand2.addEventListener( 'pinchend',  (event) => {
-  //     self.onPinchEndRight.bind(self, event).call()
-  //   } )
-  // }
 
-  // onPinchStartLeft( event ) {
-  //
-  //   const controller = event.target;
-  //
-  //   if ( this.grabbing ) {
-  //
-  //     const indexTip = controller.joints[ 'index-finger-tip' ];
-  //     const sphere = this.collideObject( indexTip );
-  //
-  //     if ( sphere ) {
+  animate() {
 
-    //     const sphere2 = this.hand2.userData.selected;
-    //     console.log( 'sphere1', sphere, 'sphere2', sphere2 );
-    //     if ( sphere === sphere2 ) {
-    //
-    //       this.scaling.active = true;
-    //       this.scaling.object = sphere;
-    //       this.scaling.initialScale = sphere.scale.x;
-    //       this.scaling.initialDistance = indexTip.position.distanceTo( this.hand2.joints[ 'index-finger-tip' ].position );
-    //       return;
-    //
-    //     }
-    //
-    //   }
-    //
-    // }
+    renderer.setAnimationLoop( this.render );
 
-  //   const geometry = new THREE.BoxGeometry( this.SphereRadius, this.SphereRadius, this.SphereRadius );
-  //   const material = new THREE.MeshStandardMaterial( {
-  //     color: Math.random() * 0xffffff,
-  //     roughness: 1.0,
-  //     metalness: 0.0
-  //   } );
-  //   const spawn = new THREE.Mesh( geometry, material );
-  //   spawn.geometry.computeBoundingSphere();
-  //
-  //   const indexTip = controller.joints[ 'index-finger-tip' ];
-  //   spawn.position.copy( indexTip.position );
-  //   spawn.quaternion.copy( indexTip.quaternion );
-  //
-  //   this.spheres.push( spawn );
-  //
-  //   this.scene.add( spawn );
-  //
-  // }
-
-  // onPinchStartRight( event ) {
-  //
-  //   const controller = event.target;
-  //   const indexTip = controller.joints[ 'index-finger-tip' ];
-  //   const object = this.collideObject( indexTip );
-  //   if ( object ) {
-  //
-  //     this.grabbing = true;
-  //     indexTip.attach( object );
-  //     controller.userData.selected = object;
-  //     console.log( 'Selected', object );
-  //
-  //   }
-  //
-  // }
-  //
-  //
-  //
-  // onPinchEndRight( event ) {
-  //
-  //   const controller = event.target;
-  //
-  //   if ( controller.userData.selected !== undefined ) {
-  //
-  //     const object = controller.userData.selected;
-  //     object.material.emissive.b = 0;
-  //     this.scene.attach( object );
-  //
-  //     controller.userData.selected = undefined;
-  //     this.grabbing = false;
-  //
-  //   }
-  //
-  //   this.scaling.active = false;
-  //
-  // }
-
-  // collideObject( indexTip ) {
-  //
-  //   for ( let i = 0; i < this.spheres.length; i ++ ) {
-  //
-  //     const sphere = this.spheres[ i ];
-  //     const distance = indexTip.getWorldPosition( this.tmpVector1 ).distanceTo( sphere.getWorldPosition( this.tmpVector2 ) );
-  //
-  //     if ( distance < sphere.geometry.boundingSphere.radius * sphere.scale.x ) {
-  //
-  //       return sphere;
-  //
-  //     }
-  //
-  //   }
-  //
-  //   return null;
-  //
-  // }
+  }
 
   resize() {
     this.camera.aspect = window.innerWidth / window.innerHeight
@@ -746,18 +643,20 @@ class App {
     const delta = this.clock.getDelta();
     const elapsedTime =  this.clock.elapsedTime;
     this.renderer.xr.updateCamera( this.camera );
-    this.world.execute( delta, elapsedTime );
+    if (elapsedTime > 10) {
+      this.world.execute( delta, elapsedTime );
+    }
     this.renderer.render(  this.scene, this.camera );
 
-    if ( this.scaling.active ) {
-
-      const indexTip1Pos = this.hand1.joints[ 'index-finger-tip' ].position;
-      const indexTip2Pos = this.hand2.joints[ 'index-finger-tip' ].position;
-      const distance = indexTip1Pos.distanceTo( indexTip2Pos );
-      const newScale = this.scaling.initialScale + distance / this.scaling.initialDistance - 1;
-      this.scaling.object.scale.setScalar( newScale );
-
-    }
+    // if ( this.scaling.active ) {
+    //
+    //   const indexTip1Pos = this.hand1.joints[ 'index-finger-tip' ].position;
+    //   const indexTip2Pos = this.hand2.joints[ 'index-finger-tip' ].position;
+    //   const distance = indexTip1Pos.distanceTo( indexTip2Pos );
+    //   const newScale = this.scaling.initialScale + distance / this.scaling.initialDistance - 1;
+    //   this.scaling.object.scale.setScalar( newScale );
+    //
+    // }
 
     /*if (this.fork) {
       this.fork.rotateY(0.1 * xAxis)
