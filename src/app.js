@@ -9,6 +9,8 @@ import blimp from "../assets/blimp.glb"
 import {XRHandModelFactory} from "three/examples/jsm/webxr/XRHandModelFactory";
 import { World, System, Component, TagComponent, Types } from "three/examples/jsm/libs/ecsy.module";
 import {createText} from "three/examples/jsm/webxr/Text2D";
+import {OculusHandModel} from "three/examples/jsm/webxr/OculusHandModel";
+import {XRControllerModelFactory} from "three/examples/jsm/webxr/XRControllerModelFactory";
 
 class Object3D extends Component { }
 
@@ -274,12 +276,12 @@ class App {
   };
 
 
-   world = new World();
-   camera
-   scene
-   renderer
+  world = new World();
+
   clock = new THREE.Clock();
-  SphereRadius = 0.05;
+  camera
+  scene
+  renderer;
 
   constructor() {
     const container = document.createElement('div')
@@ -463,6 +465,34 @@ class App {
       }
     };
 
+    const controller1 = this.renderer.xr.getController( 0 );
+    this.scene.add( controller1 );
+
+    const controller2 = this.renderer.xr.getController( 1 );
+    this.scene.add( controller2 );
+
+    const controllerModelFactory = new XRControllerModelFactory();
+
+    // Hand 1
+    const controllerGrip1 = this.renderer.xr.getControllerGrip( 0 );
+    controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
+    this.scene.add( controllerGrip1 );
+
+    const hand1 = this.renderer.xr.getHand( 0 );
+    const handModel1 = new OculusHandModel( hand1 );
+    hand1.add( handModel1 );
+    this.scene.add( hand1 );
+
+    // Hand 2
+    const controllerGrip2 = this.renderer.xr.getControllerGrip( 1 );
+    controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
+    this.scene.add( controllerGrip2 );
+
+    const hand2 = this.renderer.xr.getHand( 1 );
+    const handModel2 = new OculusHandModel( hand2 );
+    hand2.add( handModel2 );
+    this.scene.add( hand2 );
+
     const floorGeometry = new THREE.PlaneGeometry( 4, 4 );
     const floorMaterial = new THREE.MeshPhongMaterial( { color: 0x222222 } );
     const floor = new THREE.Mesh( floorGeometry, floorMaterial );
@@ -531,7 +561,7 @@ class App {
         .registerSystem(RotatingSystem)
         .registerSystem(CalibrationSystem, {renderer: this.renderer, camera: this.camera})
         .registerSystem(ButtonSystem, {renderer: this.renderer, camera: this.camera})
-        .registerSystem(FingerInputSystem, {hands: [this.hand1, this.hand2]});
+        .registerSystem(FingerInputSystem, {hands: [handModel1, handModel2]});
 
     const csEntity = this.world.createEntity();
     csEntity.addComponent( OffsetFromCamera, { x: 0, y: - 0.4, z: - 0.3 } );
@@ -600,29 +630,24 @@ class App {
 
     function onWindowResize() {
 
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
 
       renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.shadowMap.enabled = true;
+      renderer.xr.enabled = true;
+      renderer.xr.cameraAutoUpdate = false;
+
+      container.appendChild( renderer.domElement );
+
+      document.body.appendChild( VRButton.createButton( renderer ) );
+
+      // controllers
 
     }
 
 
-
-
-    const hand1 = this.renderer.xr.getHand(0)
-    hand1.add(new XRHandModelFactory().createHandModel(hand1, "mesh"))
-    this.scene.add(hand1)
-    // hand1.addEventListener('selectstart',  evt => {
-    //   self.changeAngle.bind(self, evt.handedness ).call();
-    // } )
-
-    const hand2 = this.renderer.xr.getHand(1)
-    hand2.add(new XRHandModelFactory().createHandModel(hand2, "mesh"))
-    this.scene.add(hand2);
-
-    this.hand1 = hand1
-    this.hand2 = hand2
   }
 
 
