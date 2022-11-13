@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import {VRButton} from "three/examples/jsm/webxr/VRButton"
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader"
-//import {XRControllerModelFactory} from "three/examples/jsm/webxr/XRControllerModelFactory";
 
 import clown from "../assets/clown.glb"
 import blimp from "../assets/blimp.glb"
@@ -263,6 +262,7 @@ InstructionSystem.queries = {
 
 
 class App {
+  clown = {}
   spheres = [];
   tmpVector1 = new THREE.Vector3();
   tmpVector2 = new THREE.Vector3();
@@ -349,7 +349,7 @@ class App {
     this.loadAsset(clown, 0, .5, -5, scene => {
       const scale = 1
       scene.scale.set(scale, scale, scale)
-      self.clown = scene
+      this.clown = scene
     })
 
   }
@@ -434,6 +434,7 @@ class App {
 
         this.camera = attributes.camera;
         this.renderer = attributes.renderer;
+        this.clown = attributes.clown
 
       }
 
@@ -559,7 +560,7 @@ class App {
 
     this.world
         .registerSystem(RotatingSystem)
-        .registerSystem(CalibrationSystem, {renderer: this.renderer, camera: this.camera})
+        .registerSystem(CalibrationSystem, {renderer: this.renderer, camera: this.camera, clown: this.clown})
         .registerSystem(ButtonSystem, {renderer: this.renderer, camera: this.camera})
         .registerSystem(FingerInputSystem, {hands: [handModel1, handModel2]});
 
@@ -609,7 +610,7 @@ class App {
       exitText.visible = true;
       setTimeout( function () {
 
-        exitText.visible = false; renderer.xr.getSession().end();
+       this.clown.translateZ(100)
 
       }, 2000 );
 
