@@ -118,6 +118,7 @@ class ButtonSystem extends System {
 
 }
 
+
 ButtonSystem.queries = {
   buttons: {
     components: [ Button ]
@@ -133,6 +134,7 @@ class FingerInputSystem extends System {
     this.hands = attributes.hands;
 
   }
+
 
   execute( delta/*, time*/ ) {
 
@@ -339,6 +341,8 @@ class App {
       scene.scale.set(scale, scale, scale)
       self.blimp = scene
     })
+
+
     //
     // this.loadAsset(chair, .5, .5, 1, scene => {
     //   const scale = 1
@@ -346,13 +350,14 @@ class App {
     //   self.chair = scene
     // })
 
-    this.loadAsset(clown, 0, .5, -5, scene => {
+    this.loadAsset(clown, 5, .5, -5, scene => {
       const scale = 1
       scene.scale.set(scale, scale, scale)
       this.clown = scene
     })
 
   }
+
 
   loadAsset(gltfFilename, x, y, z, sceneHandler) {
     const self = this
@@ -483,6 +488,7 @@ class App {
     const handModel1 = new OculusHandModel( hand1 );
     hand1.add( handModel1 );
     this.scene.add( hand1 );
+    this.hand1 = hand1
 
     // Hand 2
     const controllerGrip2 = this.renderer.xr.getControllerGrip( 1 );
@@ -492,7 +498,9 @@ class App {
     const hand2 = this.renderer.xr.getHand( 1 );
     const handModel2 = new OculusHandModel( hand2 );
     hand2.add( handModel2 );
+    this.hand2 = hand2;
     this.scene.add( hand2 );
+
 
     const floorGeometry = new THREE.PlaneGeometry( 4, 4 );
     const floorMaterial = new THREE.MeshPhongMaterial( { color: 0x222222 } );
@@ -596,10 +604,12 @@ class App {
     rbEntity.addComponent( Object3D, { object: resetButton } );
     const rbAction = function () {
 
-      torusKnot.material.color.setHex( 0xffffff );
+      exitText.visible = true;
+      self.clown.translateY(-.1)
+      console.debug('Reset button pressed')
 
     };
-
+    const self = this
     rbEntity.addComponent( Button, { action: rbAction, surfaceY: 0.05, fullPressDistance: 0.02 } );
 
     const ebEntity = this.world.createEntity();
@@ -608,12 +618,8 @@ class App {
     const ebAction = function () {
 
       exitText.visible = true;
-      setTimeout( function () {
-
-       this.clown.translateZ(100)
-
-      }, 2000 );
-
+             self.clown.translateY(.1)
+             console.debug('Exit button pressed')
     };
 
     ebEntity.addComponent( Button, { action: ebAction, surfaceY: 0.05, recoverySpeed: 0.2, fullPressDistance: 0.03 } );
@@ -650,6 +656,26 @@ class App {
 
 
   }
+  // initConsole() {
+  //   const self = this
+  //   const consoleButtons = new ConsoleButtons({
+  //     scene: this.scene,
+  //     world: this.world,
+  //     handModelLeft: this.hand1,
+  //     handModelRight: this.hand2,
+  //     renderer: this.renderer,
+  //     camera: this.camera
+  //   })
+  //   consoleButtons.setAction(RESET_BUTTON, () => {
+  //     self.clown.translateY(.1)
+  //     console.debug('Orange button pressed')
+  //   })
+  //
+  //   consoleButtons.setAction(EXIT_BUTTON, () => {
+  //     self.clown.translateY(-.1)
+  //     console.debug('Orange button pressed')
+  //   })
+  // }
 
 
   animate() {
