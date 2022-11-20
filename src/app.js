@@ -349,7 +349,7 @@ class App {
       this.clown = scene
     })
 
-    this.loadAsset(CYBER, 5, .1, -10, scene => {
+    this.loadAsset(CYBER, 5, .05, -10, scene => {
       const scale = 5
       scene.scale.set(scale, scale, scale)
       this.CYBER = scene
