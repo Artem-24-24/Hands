@@ -497,7 +497,7 @@ class App {
     floor.receiveShadow = true;
     this.scene.add( floor );
 
-    const consoleGeometry = new THREE.BoxGeometry( 0.6, 0.12, 0.15 );
+    const consoleGeometry = new THREE.BoxGeometry( 0.65, 0.12, 0.15 );
     const consoleMaterial = new THREE.MeshPhongMaterial( { color: 0x595959 } );
     const consoleMesh = new THREE.Mesh( consoleGeometry, consoleMaterial );
     consoleMesh.position.set( 0, 1, - 0.3 );
@@ -638,7 +638,7 @@ class App {
       resetButtonText.visible = true;
       self.CYBER.visible = false
       self.clown.position.set( 5,1, -5 )
-      self.torusKnot.color = 0xffffff
+      torusKnot.material.color.setHex( 0xffffff );
       console.debug('reseted')
     };
 
