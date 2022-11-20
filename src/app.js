@@ -337,19 +337,19 @@ class App {
     sphere.position.set(1.5, 0, 0)
 
 
-    this.loadAsset(blimp, 5, .5, -5, scene => {
+    this.loadAsset(blimp, 4, 1, -5, scene => {
       const scale = 5
       scene.scale.set(scale, scale, scale)
       self.blimp = scene
     })
 
-    this.loadAsset(clown, 5, .5, -5, scene => {
+    this.loadAsset(clown, 5,1, -5, scene => {
       const scale = 1
       scene.scale.set(scale, scale, scale)
       this.clown = scene
     })
 
-    this.loadAsset(CYBER, 5, .05, -10, scene => {
+    this.loadAsset(CYBER, 5, -.05, -10, scene => {
       const scale = 5
       scene.scale.set(scale, scale, scale)
       this.CYBER = scene
@@ -524,21 +524,29 @@ class App {
     consoleMesh.add( addButton );
 
 
+    const downButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0x355c7d );
+    const downButtonText = createText( 'Down', 0.03 );
+    downButton.add( downButtonText );
+    downButtonText.rotation.x = - Math.PI / 2;
+    downButtonText.position.set( 0, 0.051, 0 );
+    downButton.position.set( 0.05, 0.04, 0 );
+    consoleMesh.add( downButton );
+
+    const UpButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0xff0000 );
+    const UpButtonText = createText( 'Up', 0.03 );
+    UpButton.add( UpButtonText );
+    UpButtonText.rotation.x = - Math.PI / 2;
+    UpButtonText.position.set( 0, 0.051, 0 );
+    UpButton.position.set( 0.15, 0.04, 0 );
+    consoleMesh.add( UpButton );
+
     const resetButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0x355c7d );
     const resetButtonText = createText( 'reset', 0.03 );
     resetButton.add( resetButtonText );
     resetButtonText.rotation.x = - Math.PI / 2;
     resetButtonText.position.set( 0, 0.051, 0 );
-    resetButton.position.set( 0.05, 0.04, 0 );
+    resetButton.position.set( -0.25, 0.04, 0 );
     consoleMesh.add( resetButton );
-
-    const exitButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0xff0000 );
-    const exitButtonText = createText( 'exit', 0.03 );
-    exitButton.add( exitButtonText );
-    exitButtonText.rotation.x = - Math.PI / 2;
-    exitButtonText.position.set( 0, 0.051, 0 );
-    exitButton.position.set( 0.15, 0.04, 0 );
-    consoleMesh.add( exitButton );
 
     const tkGeometry = new THREE.TorusKnotGeometry( 0.5, 0.2, 200, 32 );
     const tkMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
@@ -552,10 +560,10 @@ class App {
     instructionText.position.set( 0, 1.6, - 0.6 );
     this.scene.add( instructionText );
 
-    const exitText = createText( 'Exiting session...', 0.04 );
-    exitText.position.set( 0, 1.5, - 0.6 );
-    exitText.visible = false;
-    this.scene.add( exitText );
+    const UpText = createText( 'Exiting session...', 0.04 );
+    UpText.position.set( 0, 1.5, - 0.6 );
+    UpText.visible = false;
+    this.scene.add( UpText );
 
     this.world
         .registerComponent(Object3D)
@@ -601,10 +609,10 @@ class App {
 
     const rbEntity = this.world.createEntity();
     rbEntity.addComponent( Pressable );
-    rbEntity.addComponent( Object3D, { object: resetButton } );
+    rbEntity.addComponent( Object3D, { object: downButton } );
     const rbAction = function () {
 
-      exitText.visible = true;
+      UpText.visible = true;
       self.clown.translateY(-.1)
       console.debug('Reset button pressed')
 
@@ -614,13 +622,26 @@ class App {
 
     const ebEntity = this.world.createEntity();
     ebEntity.addComponent( Pressable );
-    ebEntity.addComponent( Object3D, { object: exitButton } );
+    ebEntity.addComponent( Object3D, { object: UpButton } );
     const ebAction = function () {
 
-      exitText.visible = true;
+      UpText.visible = true;
              self.clown.translateY(.1)
              console.debug('Exit button pressed')
     };
+
+    const asEntity = this.world.createEntity();
+    asEntity.addComponent( Pressable );
+    asEntity.addComponent( Object3D, { object: resetButton } );
+    const asAction = function () {
+
+      resetButtonText.visible = true;
+      self.CYBER.visible = false
+      self.clown.position.set( 5,1, -5 )
+      console.debug('reseted')
+    };
+
+    asEntity.addComponent( Button, { action: asAction, surfaceY: 0.05, fullPressDistance: 0.02 } );
 
     const jdEntity = this.world.createEntity();
     jdEntity.addComponent( Pressable );
