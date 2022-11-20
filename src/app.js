@@ -552,15 +552,15 @@ class App {
     const tkMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
     tkMaterial.metalness = 0.8;
     const torusKnot = new THREE.Mesh( tkGeometry, tkMaterial );
-    torusKnot.position.set( 0, 1, - 5 );
-    torusKnot.visible = false
+    torusKnot.position.set( 0, 3, - 5 );
+    torusKnot.visible = true
     this.scene.add( torusKnot );
 
     const instructionText = createText( 'This is a WebXR Hands demo, please explore with hands.', 0.04 );
     instructionText.position.set( 0, 1.6, - 0.6 );
     this.scene.add( instructionText );
 
-    const UpText = createText( 'Exiting session...', 0.04 );
+    const UpText = createText( '', 0.04 );
     UpText.position.set( 0, 1.5, - 0.6 );
     UpText.visible = false;
     this.scene.add( UpText );
@@ -638,6 +638,7 @@ class App {
       resetButtonText.visible = true;
       self.CYBER.visible = false
       self.clown.position.set( 5,1, -5 )
+      self.torusKnot.color = 0xffffff
       console.debug('reseted')
     };
 
