@@ -5,6 +5,7 @@ import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader"
 
 import clown from "../assets/clown.glb"
 import blimp from "../assets/blimp.glb"
+import CYBER from "../assets/CYBER.glb"
 import {XRHandModelFactory} from "three/examples/jsm/webxr/XRHandModelFactory";
 import { World, System, Component, TagComponent, Types } from "three/examples/jsm/libs/ecsy.module";
 import {createText} from "three/examples/jsm/webxr/Text2D";
@@ -342,18 +343,17 @@ class App {
       self.blimp = scene
     })
 
-
-    //
-    // this.loadAsset(chair, .5, .5, 1, scene => {
-    //   const scale = 1
-    //   scene.scale.set(scale, scale, scale)
-    //   self.chair = scene
-    // })
-
     this.loadAsset(clown, 5, .5, -5, scene => {
       const scale = 1
       scene.scale.set(scale, scale, scale)
       this.clown = scene
+    })
+
+    this.loadAsset(CYBER, 5, .1, -10, scene => {
+      const scale = 5
+      scene.scale.set(scale, scale, scale)
+      this.CYBER = scene
+      this.CYBER.visible = false
     })
 
   }
@@ -381,19 +381,7 @@ class App {
   }
 
 
-  // changeAngle(handedness) {
-  //   if (this.clown) {
-  //     this.clown.rotateY(15)
-  //   }
-  // }
-  //
-  // changePosition(handedness) {
-  //   if (this.blimp) {
-  //    const pos = this.blimp.position
-  //     this.blimp.position.set(pos.x -0.5, pos.y, pos.z)
-  //   }
-  // }
-  Rotating;
+
   camera;
 
 
@@ -509,7 +497,7 @@ class App {
     floor.receiveShadow = true;
     this.scene.add( floor );
 
-    const consoleGeometry = new THREE.BoxGeometry( 0.5, 0.12, 0.15 );
+    const consoleGeometry = new THREE.BoxGeometry( 0.6, 0.12, 0.15 );
     const consoleMaterial = new THREE.MeshPhongMaterial( { color: 0x595959 } );
     const consoleMesh = new THREE.Mesh( consoleGeometry, consoleMaterial );
     consoleMesh.position.set( 0, 1, - 0.3 );
@@ -524,6 +512,17 @@ class App {
     const pinkButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0xe84a5f );
     pinkButton.position.set( - 0.05, 0.04, 0 );
     consoleMesh.add( pinkButton );
+
+    const addButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0xe84a5f );
+    const addButtonText = createText( 'add😪', 0.03 );
+    addButton.position.set( - 0.05, 0.04, 0 );
+    consoleMesh.add( addButton );
+    addButton.add( addButtonText );
+    addButtonText.rotation.x = - Math.PI / 2;
+    addButtonText.position.set( 0, 0.051, 0 );
+    addButton.position.set( 0.25, 0.04, 0 );
+    consoleMesh.add( addButton );
+
 
     const resetButton = this.makeButtonMesh( 0.08, 0.1, 0.08, 0x355c7d );
     const resetButtonText = createText( 'reset', 0.03 );
@@ -546,6 +545,7 @@ class App {
     tkMaterial.metalness = 0.8;
     const torusKnot = new THREE.Mesh( tkGeometry, tkMaterial );
     torusKnot.position.set( 0, 1, - 5 );
+    torusKnot.visible = false
     this.scene.add( torusKnot );
 
     const instructionText = createText( 'This is a WebXR Hands demo, please explore with hands.', 0.04 );
@@ -622,6 +622,20 @@ class App {
              console.debug('Exit button pressed')
     };
 
+    const jdEntity = this.world.createEntity();
+    jdEntity.addComponent( Pressable );
+    jdEntity.addComponent( Object3D, { object: addButton } );
+    const jdAction = function () {
+
+      addButtonText.visible = true;
+      self.CYBER.visible = true
+      console.debug('Done!')
+
+    };
+    jdEntity.addComponent( Button, { action: jdAction, surfaceY: 0.05, fullPressDistance: 0.02 } );
+
+
+
     ebEntity.addComponent( Button, { action: ebAction, surfaceY: 0.05, recoverySpeed: 0.2, fullPressDistance: 0.03 } );
 
     const tkEntity = this.world.createEntity();
@@ -650,32 +664,11 @@ class App {
 
       document.body.appendChild( VRButton.createButton( renderer ) );
 
-      // controllers
-
     }
 
 
   }
-  // initConsole() {
-  //   const self = this
-  //   const consoleButtons = new ConsoleButtons({
-  //     scene: this.scene,
-  //     world: this.world,
-  //     handModelLeft: this.hand1,
-  //     handModelRight: this.hand2,
-  //     renderer: this.renderer,
-  //     camera: this.camera
-  //   })
-  //   consoleButtons.setAction(RESET_BUTTON, () => {
-  //     self.clown.translateY(.1)
-  //     console.debug('Orange button pressed')
-  //   })
-  //
-  //   consoleButtons.setAction(EXIT_BUTTON, () => {
-  //     self.clown.translateY(-.1)
-  //     console.debug('Orange button pressed')
-  //   })
-  // }
+
 
 
   animate() {
@@ -699,21 +692,6 @@ class App {
       this.world.execute( delta, elapsedTime );
     }
     this.renderer.render(  this.scene, this.camera );
-
-    // if ( this.scaling.active ) {
-    //
-    //   const indexTip1Pos = this.hand1.joints[ 'index-finger-tip' ].position;
-    //   const indexTip2Pos = this.hand2.joints[ 'index-finger-tip' ].position;
-    //   const distance = indexTip1Pos.distanceTo( indexTip2Pos );
-    //   const newScale = this.scaling.initialScale + distance / this.scaling.initialDistance - 1;
-    //   this.scaling.object.scale.setScalar( newScale );
-    //
-    // }
-
-    /*if (this.fork) {
-      this.fork.rotateY(0.1 * xAxis)
-      this.fork.translateY(.02 * yAxis)
-    }*/
 
     this.renderer.render(this.scene, this.camera)
   }
