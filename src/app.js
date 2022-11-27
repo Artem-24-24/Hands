@@ -4,6 +4,8 @@ import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader"
 
 import clown from "../assets/clown.glb"
+import knight from "../assets/knight.glb"
+import exhausted from "../assets/exhausted.glb"
 import blimp from "../assets/blimp.glb"
 import CYBER from "../assets/CYBER.glb"
 import {XRHandModelFactory} from "three/examples/jsm/webxr/XRHandModelFactory";
@@ -263,7 +265,6 @@ InstructionSystem.queries = {
   }
 };
 
-
 class App {
   clown = {}
   spheres = [];
@@ -282,14 +283,15 @@ class App {
   world = new World();
 
   clock = new THREE.Clock();
-  camera
+
   scene
   renderer;
+  controller1;
+  controller2;
 
   constructor() {
     const container = document.createElement('div')
     document.body.appendChild(container)
-
     this.camera = new THREE.PerspectiveCamera(50,
         window.innerWidth / window.innerHeight, 0.1, 200)
     this.camera.position.set(0, 1.6, 3)
@@ -337,29 +339,61 @@ class App {
     sphere.position.set(1.5, 0, 0)
 
 
-    this.loadAsset(blimp, 4, 1, -5, scene => {
+    this.loadAsset(blimp,  gltf => {
+      const gltfScene = gltf.scene
+      self.scene.add(gltfScene)
+      gltfScene.position.set(4, 1, -5)
       const scale = 5
-      scene.scale.set(scale, scale, scale)
-      self.blimp = scene
+      gltfScene.scale.set(scale, scale, scale)
+      self.blimp = gltfScene
     })
 
-    this.loadAsset(clown, 5,1, -5, scene => {
+    this.loadAsset(clown,  gltf => {
+      const gltfScene = gltf.scene
+      self.scene.add(gltfScene)
+      gltfScene.position.set(5,1, -5)
       const scale = 1
-      scene.scale.set(scale, scale, scale)
-      this.clown = scene
+      gltfScene.scale.set(scale, scale, scale)
+      this.clown = gltfScene
     })
 
-    this.loadAsset(CYBER, 5, -.05, -10, scene => {
+    this.loadAsset(knight, gltf => {
+      const gltfScene = gltf.scene.children[0]
+      gltfScene.position.set(-5,1, -5)
+
+      self.knight = gltfScene
+      const scale = 1;
+      self.knight.scale.set(scale, scale, scale);
+
+      self.scene.add(gltfScene)
+
+      // animations
+      self.animations = {};
+
+      gltf.animations.forEach( (anim)=>{
+        self.animations[anim.name] = anim;
+      })
+
+      self.mixer = new THREE.AnimationMixer(self.knight)
+      self.action = "exhausted";
+    })
+
+
+
+    this.loadAsset(CYBER,  gltf => {
+      const gltfScene = gltf.scene
+      self.scene.add(gltfScene)
+      gltfScene.position.set(-5, -.05, -20)
       const scale = 5
-      scene.scale.set(scale, scale, scale)
-      this.CYBER = scene
+      gltfScene.scale.set(scale, scale, scale)
+      this.CYBER = gltfScene
       this.CYBER.visible = false
     })
 
   }
 
 
-  loadAsset(gltfFilename, x, y, z, sceneHandler) {
+  loadAsset(gltfFilename, sceneHandler) {
     const self = this
     const loader = new GLTFLoader()
     // Provide a DRACOLoader instance to decode compressed mesh data
@@ -368,11 +402,8 @@ class App {
     loader.setDRACOLoader(draco)
 
     loader.load(gltfFilename, (gltf) => {
-          const gltfScene = gltf.scene
-          self.scene.add(gltfScene)
-          gltfScene.position.set(x, y, z)
           if (sceneHandler) {
-            sceneHandler(gltfScene)
+            sceneHandler(gltf)
           }
         },
         null,
@@ -382,7 +413,7 @@ class App {
 
 
 
-  camera;
+
 
 
   makeButtonMesh( x, y, z, color ) {
@@ -396,6 +427,28 @@ class App {
 
   }
 
+  set action(name){
+    if (this.actionName === name) return;
+
+    const clip = this.animations[name];
+
+    if (clip !== undefined) {
+      const action = this.mixer.clipAction(clip);
+
+      if (name === 'walk') {
+        action.loop = THREE.LoopOnce;
+        action.clampWhenFinished = true;
+      }
+
+      this.actionName = name;
+      if (this.curAction) this.curAction.crossFadeTo(action, 0.5);
+
+      action.enabled = true;
+      action.play();
+
+      this.curAction = action;
+    }
+  }
 
   setupVR() {
 
@@ -461,9 +514,11 @@ class App {
 
     const controller1 = this.renderer.xr.getController( 0 );
     this.scene.add( controller1 );
+    this.controller1 = controller1
 
     const controller2 = this.renderer.xr.getController( 1 );
     this.scene.add( controller2 );
+    this.controller2 = controller2
 
     const controllerModelFactory = new XRControllerModelFactory();
 
@@ -688,9 +743,30 @@ class App {
 
     }
 
-
+    this.addActions()
   }
 
+
+  addActions() {
+    const self = this;
+
+    this.controller1.addEventListener('selectstart', () => {
+      self.action = 'exhausted'
+    })
+
+    this.controller1.addEventListener('squeezestart', () => {
+      self.action = 'Walk'
+    })
+
+    this.controller2.addEventListener('selectstart', () => {
+      self.action = 'kick'
+    })
+
+    this.controller2.addEventListener('squeezestart', () => {
+      self.action = 'spider'
+    })
+
+  }
 
 
   animate() {
@@ -698,6 +774,7 @@ class App {
     renderer.setAnimationLoop( this.render );
 
   }
+
 
   resize() {
     this.camera.aspect = window.innerWidth / window.innerHeight
@@ -714,6 +791,10 @@ class App {
       this.world.execute( delta, elapsedTime );
     }
     this.renderer.render(  this.scene, this.camera );
+
+    if (this.mixer) {
+      this.mixer.update(delta)
+    }
 
     this.renderer.render(this.scene, this.camera)
   }
